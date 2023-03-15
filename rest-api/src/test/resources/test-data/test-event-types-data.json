@@ -1,0 +1,51 @@
+[
+  {
+    "eventType": {
+      "id": "1",
+      "name": "Soccer"
+    },
+    "marketCount": 1094
+  },
+  {
+    "eventType": {
+      "id": "2",
+      "name": "Tennis"
+    },
+    "marketCount": 6456
+  },
+  {
+    "eventType": {
+      "id": "7522",
+      "name": "Basketball"
+    },
+    "marketCount": 133
+  },
+  {
+    "eventType": {
+      "id": "4",
+      "name": "Cricket"
+    },
+    "marketCount": 1
+  },
+  {
+    "eventType": {
+      "id": "7524",
+      "name": "Ice Hockey"
+    },
+    "marketCount": 22
+  },
+  {
+    "eventType": {
+      "id": "7",
+      "name": "Horse Racing"
+    },
+    "marketCount": 1446
+  },
+  {
+    "eventType": {
+      "id": "3503",
+      "name": "Darts"
+    },
+    "marketCount": 2
+  }
+]
