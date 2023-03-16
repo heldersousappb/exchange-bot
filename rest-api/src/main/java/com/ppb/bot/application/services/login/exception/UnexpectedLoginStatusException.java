@@ -1,6 +1,6 @@
 package com.ppb.bot.application.services.login.exception;
 
-import com.ppb.bot.application.services.login.dto.LoginStatus;
+import com.ppb.bot.application.gateway.identitysso.response.LoginStatus;
 
 public class UnexpectedLoginStatusException extends RuntimeException {
 

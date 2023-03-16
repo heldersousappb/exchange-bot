@@ -1,9 +1,8 @@
 package com.ppb.bot.application.services.login;
 
 import com.ppb.bot.application.gateway.identitysso.IdentitySsoGateway;
-import com.ppb.bot.application.services.login.dto.LoginStatus;
+import com.ppb.bot.application.gateway.identitysso.response.LoginStatus;
 import com.ppb.bot.application.services.login.exception.UnexpectedLoginStatusException;
-import com.ppb.bot.application.services.login.mapper.GatewayLoginResponseMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +24,12 @@ public class LoginServiceImpl implements LoginService {
 
 
     private Mono<String> login() {
-        return this.identitySsoGateway.login().map(GatewayLoginResponseMapper.INSTANCE::gatewayToService).map(loginResponseDto -> {
+        return this.identitySsoGateway.login().map(loginResponse -> {
 
-            if(loginResponseDto.getStatus() == LoginStatus.SUCCESS) {
-                return loginResponseDto.getToken();
+            if(loginResponse.getStatus() == LoginStatus.SUCCESS) {
+                return loginResponse.getToken();
             } else {
-                throw new UnexpectedLoginStatusException(loginResponseDto.getStatus());
+                throw new UnexpectedLoginStatusException(loginResponse.getStatus());
             }
 
         });
