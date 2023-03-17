@@ -33,3 +33,6 @@ build/
 .vscode/
 
 development.properties
+
+### Annoying mac stuff
+.DS_Store
