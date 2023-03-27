@@ -18,8 +18,6 @@ open class FunctionalWebExchangeController(
 
         "/functional/exchange/event".nest {
 
-            GET { ServerResponse.ok().bodyValue("HELLO!") }
-
             "/market".nest {
                 POST("/bet", accept(MediaType.APPLICATION_JSON), exchangeControllerHandler::handleMarketBetRequest)
                 POST("/books", accept(MediaType.APPLICATION_JSON), exchangeControllerHandler::handleMarketBooksRequest)
@@ -28,7 +26,6 @@ open class FunctionalWebExchangeController(
 
             POST("/types", exchangeControllerHandler::handleTypesRequest)
             POST("/list", accept(MediaType.APPLICATION_JSON), exchangeControllerHandler::handleListRequest)
-
 
         }
 
