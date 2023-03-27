@@ -36,3 +36,7 @@ development.properties
 
 ### Annoying mac stuff
 .DS_Store
+
+### Run scripts with secret properties
+run-native.sh
+run-jvm.sh

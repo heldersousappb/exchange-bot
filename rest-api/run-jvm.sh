@@ -1,0 +1,3 @@
+#!/bin/zsh
+export JAVA_HOME="/Users/sousah/jdk/jdk-17.0.6+10/Contents/Home"
+mvn spring-boot:run -Dspring-boot.run.jvmArguments="-Dcom.betfair.bot.id=npo67wopV4oKVu5g -Dcom.betfair.bot.gateway.exchange.base-url=http://ang.nxt.internal/exchange/betting/rest/v1.0 -Dcom.betfair.bot.gateway.identitysso.base-url=http://identitysso.nxt.com.betfair/api -Dcom.betfair.bot.gateway.identitysso.username=apitestuk2 -Dcom.betfair.bot.gateway.identitysso.password=password03"

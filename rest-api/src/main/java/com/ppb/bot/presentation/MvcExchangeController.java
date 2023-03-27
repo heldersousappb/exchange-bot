@@ -1,4 +1,4 @@
-package com.ppb.bot.presentation.exchange;
+package com.ppb.bot.presentation;
 
 import com.ppb.bot.application.gateway.exchange.entities.ExchangeEventMarketCount;
 import com.ppb.bot.application.gateway.exchange.entities.ExchangeEventTypeMarkets;
