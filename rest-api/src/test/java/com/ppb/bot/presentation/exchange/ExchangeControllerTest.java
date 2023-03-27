@@ -53,7 +53,7 @@ class ExchangeControllerTest {
                 new TypeReference<List<ExchangeEventTypeMarkets>>(){}
         );
 
-        Mockito.when(exchangeService.listEventTypes("")).thenReturn(Mono.just(mockData));
+        Mockito.when(exchangeService.listEventTypes()).thenReturn(Mono.just(mockData));
 
         this.webTestClient.post()
                 .uri("/exchange/event/types")
@@ -73,7 +73,7 @@ class ExchangeControllerTest {
         );
 
         Mockito.when(
-                exchangeService.listEvents("", mockData.keySet(), Optional.empty(), Optional.empty())
+                exchangeService.listEvents(mockData.keySet(), Optional.empty(), Optional.empty())
         ).thenReturn(Mono.just(mockData));
 
         this.webTestClient.post()
@@ -96,7 +96,7 @@ class ExchangeControllerTest {
         );
 
         Mockito.when(
-                exchangeService.listEventMarkets("", mockData.keySet())
+                exchangeService.listEventMarkets(mockData.keySet())
         ).thenReturn(Mono.just(mockData));
 
         this.webTestClient.post()
@@ -119,7 +119,7 @@ class ExchangeControllerTest {
         );
 
         Mockito.when(
-                exchangeService.listMarketBooks("", mockData.keySet())
+                exchangeService.listMarketBooks(mockData.keySet())
         ).thenReturn(Mono.just(mockData));
 
         this.webTestClient.post()

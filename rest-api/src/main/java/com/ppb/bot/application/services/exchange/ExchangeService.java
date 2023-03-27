@@ -16,10 +16,10 @@ import java.util.Set;
 
 public interface ExchangeService {
 
-    Mono<List<ExchangeEventTypeMarkets>> listEventTypes(String authenticationToken);
-    Mono<Map<String,List<ExchangeEventMarketCount>>> listEvents(String authenticationToken, Set<String> eventTypeIds, Optional<Instant> from, Optional<Instant> to);
-    Mono<Map<String,List<ExchangeMarketCatalogueEntry>>> listEventMarkets(String authenticationToken, Set<String> eventIds);
-    Mono<Map<String,List<ExchangeMarketBook>>> listMarketBooks(String authenticationToken, Set<String> marketIds);
-    Mono<ExchangePlaceOrdersResponse> placeOrders(String authenticationToken, ExchangePlaceOrdersRequest orders);
+    Mono<List<ExchangeEventTypeMarkets>> listEventTypes();
+    Mono<Map<String,List<ExchangeEventMarketCount>>> listEvents(Set<String> eventTypeIds, Optional<Instant> from, Optional<Instant> to);
+    Mono<Map<String,List<ExchangeMarketCatalogueEntry>>> listEventMarkets(Set<String> eventIds);
+    Mono<Map<String,List<ExchangeMarketBook>>> listMarketBooks(Set<String> marketIds);
+    Mono<ExchangePlaceOrdersResponse> placeOrders(ExchangePlaceOrdersRequest orders);
 
 }
