@@ -93,7 +93,7 @@ public class ExchangeMemoryCacheGuavaImpl implements ExchangeMemoryCache {
                         LOGGER.debug("Cache HIT for event {} markets", eventMarket.getFirst());
                         return eventMarket;
                     })
-                    .collect(Collectors.toMap(eventMarket -> eventMarket.getFirst(), x -> x.getSecond()))
+                    .collect(Collectors.toMap(eventMarket -> eventMarket.getFirst(), eventMarket -> eventMarket.getSecond()))
         );
     }
 
