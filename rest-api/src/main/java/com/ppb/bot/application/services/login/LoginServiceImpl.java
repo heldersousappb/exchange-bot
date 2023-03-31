@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 @Service
 public class LoginServiceImpl implements LoginService {
@@ -23,38 +22,36 @@ public class LoginServiceImpl implements LoginService {
     }
 
 
-    private Mono<String> login() {
-        return this.identitySsoGateway.login().map(loginResponse -> {
+    private String login() {
 
-            if(loginResponse.getStatus() == LoginStatus.SUCCESS) {
-                return loginResponse.getToken();
-            } else {
-                throw new UnexpectedLoginStatusException(loginResponse.getStatus());
-            }
+        final var loginResponse = this.identitySsoGateway.login();
 
-        });
+        if (loginResponse.getStatus() == LoginStatus.SUCCESS) {
+            return loginResponse.getToken();
+        } else {
+            throw new UnexpectedLoginStatusException(loginResponse.getStatus());
+        }
+
     }
 
     @Override
-    public Mono<String> getAuthenticationToken() {
+    public String getAuthenticationToken() {
         if(this.authenticationToken == null) {
             return this.refreshAuthenticationToken();
         } else {
-            return Mono.just(this.authenticationToken);
+            return this.authenticationToken;
         }
     }
 
     @Override
-    public Mono<String> refreshAuthenticationToken() {
-        return this.login().map(authenticationToken -> {
-            LOGGER.info("Refreshing authentication token...");
-            this.authenticationToken = authenticationToken;
-            return authenticationToken;
-        });
+    public String refreshAuthenticationToken() {
+        LOGGER.info("Refreshing authentication token...");
+        this.authenticationToken = this.login();
+        return this.authenticationToken;
     }
 
     @Scheduled(fixedDelay = 3600000) // Refresh authentication token every hour
     public void refreshTokenJob() {
-        this.refreshAuthenticationToken().subscribe();
+        this.refreshAuthenticationToken();
     }
 }

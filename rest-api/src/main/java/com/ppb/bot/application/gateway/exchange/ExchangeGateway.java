@@ -6,7 +6,7 @@ import com.ppb.bot.application.gateway.exchange.entities.ExchangeEventMarketCoun
 import com.ppb.bot.application.gateway.exchange.entities.ExchangeEventTypeMarkets;
 import com.ppb.bot.application.gateway.exchange.request.ExchangePlaceOrdersRequest;
 import com.ppb.bot.application.gateway.exchange.response.ExchangePlaceOrdersResponse;
-import reactor.core.publisher.Mono;
+
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -18,10 +18,10 @@ public interface ExchangeGateway {
     String APPLICATION_HEADER_NAME = "X-Application";
     String AUTHENTICATION_HEADER_NAME = "X-Authentication";
 
-    Mono<List<ExchangeEventTypeMarkets>> listEventTypes(String authenticationToken);
-    Mono<List<ExchangeEventMarketCount>> listEvents(String authenticationToken, Set<String> eventTypeIds, Optional<Instant> from, Optional<Instant> to);
-    Mono<Map<String,List<ExchangeMarketCatalogueEntry>>> listEventMarkets(String authenticationToken, Set<String> eventIds);
-    Mono<Map<String,List<ExchangeMarketBook>>> listMarketBooks(String authenticationToken, Set<String> marketIds);
-    Mono<ExchangePlaceOrdersResponse> placeOrders(String authenticationToken, ExchangePlaceOrdersRequest orders);
+    List<ExchangeEventTypeMarkets> listEventTypes(String authenticationToken);
+    List<ExchangeEventMarketCount> listEvents(String authenticationToken, Set<String> eventTypeIds, Optional<Instant> from, Optional<Instant> to);
+    Map<String,List<ExchangeMarketCatalogueEntry>> listEventMarkets(String authenticationToken, Set<String> eventIds);
+    Map<String,List<ExchangeMarketBook>> listMarketBooks(String authenticationToken, Set<String> marketIds);
+    ExchangePlaceOrdersResponse placeOrders(String authenticationToken, ExchangePlaceOrdersRequest orders);
 
 }

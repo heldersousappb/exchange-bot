@@ -10,11 +10,10 @@ import com.ppb.bot.application.gateway.exchange.response.ExchangePlaceOrdersResp
 import com.ppb.bot.application.services.login.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ExchangeServiceImpl implements ExchangeService {
@@ -34,86 +33,79 @@ public class ExchangeServiceImpl implements ExchangeService {
     }
 
     @Override
-    public Mono<List<ExchangeEventTypeMarkets>> listEventTypes() {
-        return this.loginService.getAuthenticationToken().flatMap( authenticationToken -> {
-            return this.exchangeMemoryCache.getCachedEventTypes() // Try to get from cache
-                    .switchIfEmpty(this.exchangeMemoryCache.cacheEventTypes(this.exchangeGateway.listEventTypes(authenticationToken))); // Get and cache
-        });
-    }
+    public List<ExchangeEventTypeMarkets> listEventTypes() {
 
-    @Override
-    public Mono<Map<String,List<ExchangeEventMarketCount>>> listEvents(Set<String> eventTypeIds, Optional<Instant> from, Optional<Instant> to) {
+        final var cachedEventTypes = this.exchangeMemoryCache.getCachedEventTypes();
 
-        return this.loginService.getAuthenticationToken().flatMap( authenticationToken -> Mono.from(
-            Flux.fromStream(
-                eventTypeIds.stream().map(eventTypeId ->
-                        this.exchangeMemoryCache.getCachedEventTypeEventMarkets(eventTypeId) // Trying to get from cache
-                                .switchIfEmpty(this.exchangeGateway.listEvents(authenticationToken, Set.of(eventTypeId), from, to).flatMap(gatewayEvents -> this.exchangeMemoryCache.cacheEventTypeEventMarkets(eventTypeId, gatewayEvents))) // Get and cache
-                                .map(eventTypeIdMarketCount -> Map.of(eventTypeId, eventTypeIdMarketCount)) // Convert to map structure
-                )
-            ).flatMap(x -> x)
-        ));
-
+        if(cachedEventTypes == null) {
+            final var exchangeEventTypes = this.exchangeGateway.listEventTypes(this.loginService.getAuthenticationToken());
+            this.exchangeMemoryCache.cacheEventTypes(exchangeEventTypes);
+            return exchangeEventTypes;
+        } else {
+            return cachedEventTypes;
+        }
 
     }
 
     @Override
-    public Mono<Map<String, List<ExchangeMarketCatalogueEntry>>> listEventMarkets(Set<String> eventIds) {
+    public Map<String,List<ExchangeEventMarketCount>> listEvents(final Set<String> eventTypeIds, final Optional<Instant> from, final Optional<Instant> to) {
 
-        return this.loginService.getAuthenticationToken().flatMap( authenticationToken ->
+        var eventTypeIdMarkets = new HashMap<String,List<ExchangeEventMarketCount>>();
 
-            this.exchangeMemoryCache.getEventMarkets(eventIds).flatMap(cachedEventMarkets -> {
+        eventTypeIds.stream().forEach(eventTypeId -> {
 
-                // Removing cache hits
-                eventIds.removeAll(cachedEventMarkets.keySet());
+                var eventTypeMarkets = this.exchangeMemoryCache.getCachedEventTypeEventMarkets(eventTypeId); // Trying to get from cache
 
-                if(eventIds.isEmpty()) {
-                    // All markets were cached
-                    return Mono.just(cachedEventMarkets);
-                } else {
-                    // Getting cache misses from exchange gateway
-                    return this.exchangeGateway.listEventMarkets(authenticationToken, eventIds).flatMap(this.exchangeMemoryCache::cacheEventMarkets).map(gatewayEventMarkets -> {
-                        gatewayEventMarkets.putAll(cachedEventMarkets);
-                        return gatewayEventMarkets;
-                    });
+                if(eventTypeMarkets == null) {
+                    eventTypeMarkets = this.exchangeMemoryCache.cacheEventTypeEventMarkets(eventTypeId, this.exchangeGateway.listEvents(this.loginService.getAuthenticationToken(), Set.of(eventTypeId), from, to));
                 }
 
-            })
+                eventTypeIdMarkets.put(eventTypeId, eventTypeMarkets);
+
+            }
         );
 
+        return eventTypeIdMarkets;
     }
 
     @Override
-    public Mono<Map<String, List<ExchangeMarketBook>>> listMarketBooks(Set<String> marketIds) {
+    public Map<String, List<ExchangeMarketCatalogueEntry>> listEventMarkets(final Set<String> eventIds) {
 
-        return this.loginService.getAuthenticationToken().flatMap( authenticationToken ->
+        final var cachedEventMarketEntries = this.exchangeMemoryCache.getEventMarkets(eventIds);
 
-            this.exchangeMemoryCache.getMarketBooks(marketIds).flatMap(cachedMarketBooks -> {
+        // Removing cache hits
+        eventIds.removeAll(cachedEventMarketEntries.keySet());
 
-                // Removing cache hits
-                marketIds.removeAll(cachedMarketBooks.keySet());
+        if(!eventIds.isEmpty()) {
+            // Getting cache misses from exchange gateway and caching them
+            cachedEventMarketEntries.putAll(
+                    this.exchangeMemoryCache.cacheEventMarkets(this.exchangeGateway.listEventMarkets(this.loginService.getAuthenticationToken(), eventIds))
+            );
+        }
 
-                if(marketIds.isEmpty()) {
-                    // No cache misses
-                    return Mono.just(cachedMarketBooks);
-                } else {
-                    // Getting cache misses from exchange gateway
-                    return this.exchangeGateway.listMarketBooks(authenticationToken, marketIds).flatMap(this.exchangeMemoryCache::cacheMarketBooks).map(gatewayEventMakers -> {
-                        gatewayEventMakers.putAll(cachedMarketBooks);
-                        return gatewayEventMakers;
-                    });
-                }
-            })
-        );
-
+        return cachedEventMarketEntries;
     }
 
     @Override
-    public Mono<ExchangePlaceOrdersResponse> placeOrders(ExchangePlaceOrdersRequest orders) {
+    public Map<String, List<ExchangeMarketBook>> listMarketBooks(final Set<String> marketIds) {
 
-        return this.loginService.getAuthenticationToken().flatMap( authenticationToken ->
-            this.exchangeGateway.placeOrders(authenticationToken, orders)
-        );
+        final var cachedMarketIdBooks = this.exchangeMemoryCache.getMarketBooks(marketIds);
 
+        // Removing cache hits
+        marketIds.removeAll(cachedMarketIdBooks.keySet());
+
+        if(!marketIds.isEmpty()) {
+            // Getting cache misses from exchange gateway and caching them
+            cachedMarketIdBooks.putAll(
+                    this.exchangeMemoryCache.cacheMarketBooks(this.exchangeGateway.listMarketBooks(this.loginService.getAuthenticationToken(), marketIds))
+            );
+        }
+
+        return cachedMarketIdBooks;
+    }
+
+    @Override
+    public ExchangePlaceOrdersResponse placeOrders(final ExchangePlaceOrdersRequest orders) {
+        return this.exchangeGateway.placeOrders(this.loginService.getAuthenticationToken(), orders);
     }
 }

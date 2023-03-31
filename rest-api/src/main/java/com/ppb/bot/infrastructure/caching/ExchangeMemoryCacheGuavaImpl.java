@@ -11,7 +11,6 @@ import com.ppb.bot.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.util.*;
@@ -36,92 +35,86 @@ public class ExchangeMemoryCacheGuavaImpl implements ExchangeMemoryCache {
     }
 
     @Override
-    public Mono<List<ExchangeEventTypeMarkets>> getCachedEventTypes() {
+    public List<ExchangeEventTypeMarkets> getCachedEventTypes() {
 
         List<ExchangeEventTypeMarkets> cached = this.eventTypesCache.getIfPresent("");
 
         if(cached == null) {
             LOGGER.debug("Cache MISS for event types!");
-            return Mono.empty();
         } else {
             LOGGER.debug("Cache HIT for event types!");
-            return Mono.just(cached);
         }
 
-    }
-
-    @Override
-    public Mono<List<ExchangeEventTypeMarkets>> cacheEventTypes(Mono<List<ExchangeEventTypeMarkets>> eventTypeMarkets) {
-
-        return eventTypeMarkets.map(eventTypeMarketsList -> {
-            this.eventTypesCache.put("", eventTypeMarketsList);
-            LOGGER.debug("Event types were cached!");
-            return eventTypeMarketsList;
-        });
+        return cached;
 
     }
 
     @Override
-    public Mono<List<ExchangeEventMarketCount>> getCachedEventTypeEventMarkets(String eventType) {
+    public List<ExchangeEventTypeMarkets> cacheEventTypes(List<ExchangeEventTypeMarkets> eventTypeMarkets) {
 
-        List<ExchangeEventMarketCount> cached = this.eventTypeMarketsCache.getIfPresent(eventType);
+        this.eventTypesCache.put("", eventTypeMarkets);
+        LOGGER.debug("Event types were cached!");
+        return eventTypeMarkets;
+
+    }
+
+    @Override
+    public List<ExchangeEventMarketCount> getCachedEventTypeEventMarkets(String eventType) {
+
+        final List<ExchangeEventMarketCount> cached = this.eventTypeMarketsCache.getIfPresent(eventType);
 
         if(cached == null) {
             LOGGER.debug("Cache MISS for event type {}!", eventType);
-            return Mono.empty();
         } else {
             LOGGER.debug("Cache HIT for event type {}!", eventType);
-            return Mono.just(cached);
         }
 
+        return cached;
+
     }
 
     @Override
-    public Mono<List<ExchangeEventMarketCount>> cacheEventTypeEventMarkets(String eventType, List<ExchangeEventMarketCount> eventMarkets) {
+    public List<ExchangeEventMarketCount> cacheEventTypeEventMarkets(String eventType, List<ExchangeEventMarketCount> eventMarkets) {
         this.eventTypeMarketsCache.put(eventType, eventMarkets);
         LOGGER.debug("Event type {} was cached!", eventType);
-        return Mono.just(eventMarkets);
+        return eventMarkets;
     }
 
     @Override
-    public Mono<Map<String, List<ExchangeMarketCatalogueEntry>>> getEventMarkets(Set<String> eventIds) {
-        return Mono.just(
-                eventIds.stream()
-                    .map(eventId -> new Pair<>(eventId, this.eventMarketsCache.getIfPresent(eventId))) // Getting from cache
-                    .filter(cachedEventMarkets -> cachedEventMarkets.getSecond() != null) // Filtering cache misses
-                    .map(eventMarket -> {
-                        LOGGER.debug("Cache HIT for event {} markets", eventMarket.getFirst());
-                        return eventMarket;
-                    })
-                    .collect(Collectors.toMap(eventMarket -> eventMarket.getFirst(), x -> x.getSecond()))
-        );
+    public Map<String, List<ExchangeMarketCatalogueEntry>> getEventMarkets(Set<String> eventIds) {
+        return eventIds
+            .stream().map(eventId -> new Pair<>(eventId, this.eventMarketsCache.getIfPresent(eventId))) // Getting from cache
+            .filter(cachedEventMarkets -> cachedEventMarkets.getSecond() != null) // Filtering cache misses
+            .map(eventMarket -> {
+                LOGGER.debug("Cache HIT for event {} markets", eventMarket.getFirst());
+                return eventMarket;
+            })
+            .collect(Collectors.toMap(eventMarket -> eventMarket.getFirst(), x -> x.getSecond())); // Collecting as Map<String, List<ExchangeMarketCatalogueEntry>>
     }
 
     @Override
-    public Mono<Map<String, List<ExchangeMarketCatalogueEntry>>> cacheEventMarkets(Map<String, List<ExchangeMarketCatalogueEntry>> eventMarkets) {
+    public Map<String, List<ExchangeMarketCatalogueEntry>> cacheEventMarkets(Map<String, List<ExchangeMarketCatalogueEntry>> eventMarkets) {
         this.eventMarketsCache.putAll(eventMarkets);
         LOGGER.debug("Markets cached for events {}", Arrays.toString(eventMarkets.keySet().toArray()));
-        return Mono.just(eventMarkets);
+        return eventMarkets;
     }
 
     @Override
-    public Mono<Map<String, List<ExchangeMarketBook>>> getMarketBooks(Set<String> marketIds) {
-        return Mono.just(
-                marketIds.stream()
-                        .map(marketId -> new Pair<>(marketId, this.marketBooksCache.getIfPresent(marketId)))
-                        .filter(cachedMarketBooks -> cachedMarketBooks.getSecond() != null)
-                        .map(marketBooks -> {
-                            LOGGER.debug("Cache HIT for market {} books", marketBooks.getFirst());
-                            return marketBooks;
-                        })
-                        .collect(Collectors.toMap(cachedMarketBooks -> cachedMarketBooks.getFirst(), cachedMarketBooks -> cachedMarketBooks.getSecond()))
-        );
+    public Map<String, List<ExchangeMarketBook>> getMarketBooks(Set<String> marketIds) {
+        return marketIds
+            .stream().map(marketId -> new Pair<>(marketId, this.marketBooksCache.getIfPresent(marketId)))
+            .filter(cachedMarketBooks -> cachedMarketBooks.getSecond() != null)
+            .map(marketBooks -> {
+                LOGGER.debug("Cache HIT for market {} books", marketBooks.getFirst());
+                return marketBooks;
+            })
+            .collect(Collectors.toMap(cachedMarketBooks -> cachedMarketBooks.getFirst(), cachedMarketBooks -> cachedMarketBooks.getSecond()));
     }
 
     @Override
-    public Mono<Map<String, List<ExchangeMarketBook>>> cacheMarketBooks(Map<String, List<ExchangeMarketBook>> marketBooks) {
+    public Map<String, List<ExchangeMarketBook>> cacheMarketBooks(Map<String, List<ExchangeMarketBook>> marketBooks) {
         this.marketBooksCache.putAll(marketBooks);
         LOGGER.debug("Books cached for markets {}", Arrays.toString(marketBooks.keySet().toArray()));
-        return Mono.just(marketBooks);
+        return marketBooks;
     }
 }

@@ -9,7 +9,6 @@ import com.ppb.bot.application.gateway.exchange.response.ExchangePlaceOrdersResp
 import com.ppb.bot.application.services.exchange.ExchangeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
 
 import java.time.Instant;
 import java.util.List;
@@ -30,12 +29,12 @@ public class MvcExchangeController {
     }
 
     @PostMapping("/types")
-    public Mono<List<ExchangeEventTypeMarkets>> getEventTypes() {
+    public List<ExchangeEventTypeMarkets> getEventTypes() {
         return this.exchangeService.listEventTypes();
     }
 
     @PostMapping("/list")
-    public Mono<Map<String,List<ExchangeEventMarketCount>>> getTypeEvents(
+    public Map<String,List<ExchangeEventMarketCount>> getTypeEvents(
         @RequestParam(name = "from", required = false) final Optional<Instant> from,
         @RequestParam(name = "to", required = false) Optional<Instant> to,
         @RequestBody final Set<String> eventTypeIds
@@ -44,21 +43,21 @@ public class MvcExchangeController {
     }
 
     @PostMapping("/market")
-    public Mono<Map<String, List<ExchangeMarketCatalogueEntry>>> getEventMarkets(
+    public Map<String, List<ExchangeMarketCatalogueEntry>> getEventMarkets(
         @RequestBody final Set<String> eventIds
     ) {
         return this.exchangeService.listEventMarkets(eventIds);
     }
 
     @PostMapping("/market/books")
-    public Mono<Map<String, List<ExchangeMarketBook>>> getMarketBooks(
+    public Map<String, List<ExchangeMarketBook>> getMarketBooks(
         @RequestBody final Set<String> marketIds
     ) {
         return this.exchangeService.listMarketBooks(marketIds);
     }
 
     @PostMapping("/market/bet")
-    public Mono<ExchangePlaceOrdersResponse> placeOrders(
+    public ExchangePlaceOrdersResponse placeOrders(
         @RequestBody final ExchangePlaceOrdersRequest orders
     ) {
         return this.exchangeService.placeOrders(orders);
